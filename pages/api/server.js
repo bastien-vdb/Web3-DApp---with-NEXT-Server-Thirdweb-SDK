@@ -1,4 +1,3 @@
-import React from 'react';
 import { ThirdwebSDK } from "@thirdweb-dev/sdk";
 
 const MoebiusContractAddress = '0xC2817C822957e322B9296621E0d7d7a57C10f7d2';
@@ -20,7 +19,7 @@ async function handler(req, res) {
       };
 
     const SDK = ThirdwebSDK.fromPrivateKey(process.env.PRIVATE_KEY, "goerli");
-    const signatureContract = await SDK.getContract(MoebiusContractAddress)
+    const signatureContract = await SDK.getContract(MoebiusContractAddress);
 
     const mintSignature = await signatureContract.erc721.signature.generate({
         to: connectedWallet, // Can only be minted by the address we checked earlier
