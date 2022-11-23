@@ -1,7 +1,7 @@
 import { ThirdwebNftMedia, useAddress, useContract, useOwnedNFTs, useContractWrite } from '@thirdweb-dev/react';
 import TopBar from './TopBar';
 import { MoebiusContractAddress } from './index';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import NftSelectModal from './NftSelectModal';
 
 function Wallet(props) {
@@ -9,6 +9,7 @@ function Wallet(props) {
     const connectedWallet = useAddress();
     const { contract } = useContract(MoebiusContractAddress);
     const { data: nftsOwned, isLoading: loadingNFTsOwned, error } = useOwnedNFTs(contract, connectedWallet);
+    const [isLoading, setLoading] = useState(false);
 
     useEffect(() => {
         console.log(nftsOwned);
@@ -17,12 +18,13 @@ function Wallet(props) {
     const { mutateAsync: merge } = useContractWrite(contract, "merge");
 
     const mergeForSpecial = async () => {
+        setLoading(true);
         const response = await fetch('http://localhost:3001/api/server', {
-            method:'POST',
+            method: 'POST',
             body: connectedWallet,
         });
         const responseJson = await response.json();
-        
+
         const _req = {
             to: responseJson.payload.to,
             royaltyRecipient: responseJson.payload.royaltyRecipient,
@@ -37,7 +39,14 @@ function Wallet(props) {
             uid: responseJson.payload.uid
         };
 
-        const tx = await merge([_req, responseJson.signature, [9]]); // Call the function
+        try {
+            const tx = await merge([_req, responseJson.signature, [9]]); // Call the function
+        }
+        catch (error) {
+            setLoading(false);
+            console.log(error);
+        }
+        console.log(isLoading);
     }
 
     return (
@@ -46,8 +55,10 @@ function Wallet(props) {
             <div className="flex justify-center items-center h-screen">
                 <div>
 
-                    <button className='bg-black border border-neutral-900 rounded px-12 py-2 font-bold text-white'
+                    <button className='border border-neutral-900 rounded px-12 py-2 font-bold text-white'
+                        style={{ background: isLoading ? "red" : "black" }}
                         onClick={mergeForSpecial}
+                        disabled={isLoading}
                     >
                         Merge my NFT
                     </button>
